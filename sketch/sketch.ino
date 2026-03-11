@@ -27,7 +27,7 @@ int  servoDir  = 1;
 int  servoStep = 2;
 String servoMode = "auto";
 unsigned long lastServoMove = 0;
-const int servoDelay = 20;
+const int servoDelay = 200;
 
 // === LDR non-bloquant ===
 int  ldrReadings[20];
