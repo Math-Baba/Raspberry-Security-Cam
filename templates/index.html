@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SENTINEL — Système de Surveillance</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<!-- ── LOCK SCREEN ── -->
+<div id="lockScreen">
+  <div class="lock-logo">Caméra de Surveillance</div>
+  <div class="lock-icon">
+    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  </div>
+  <div class="lock-title">ACCÈS SÉCURISÉ</div>
+  <div class="lock-sub">ENTREZ VOTRE CODE PIN</div>
+  <div class="pin-display">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="lockInput('1')">1</button>
+    <button class="pin-btn" onclick="lockInput('2')">2</button>
+    <button class="pin-btn" onclick="lockInput('3')">3</button>
+    <button class="pin-btn" onclick="lockInput('4')">4</button>
+    <button class="pin-btn" onclick="lockInput('5')">5</button>
+    <button class="pin-btn" onclick="lockInput('6')">6</button>
+    <button class="pin-btn" onclick="lockInput('7')">7</button>
+    <button class="pin-btn" onclick="lockInput('8')">8</button>
+    <button class="pin-btn" onclick="lockInput('9')">9</button>
+    <button class="pin-btn zero" onclick="lockInput('0')">0</button>
+    <button class="pin-btn del" onclick="lockDelete()">&#9003;</button>
+  </div>
+  <div class="lock-error" id="lockError">CODE INCORRECT — RÉESSAYEZ</div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand">SENTINEL<span>.</span></div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">INACTIF</span>
+    </div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-status" style="font-size:10px;">
+      <span style="color:var(--text3)">PORT</span>&nbsp;
+      <span style="color:var(--text2)">/dev/ttyACM0</span>
+    </div>
+    <div class="topbar-time" id="clock">--:--:--</div>
+  </div>
+
+  <div class="main-layout">
+
+    <!-- CAMERA -->
+    <div class="panel cam-panel">
+      <div class="panel-header">
+        <div class="panel-label">FLUX CAMÉRA</div>
+        <div class="panel-tag" id="camTag">HORS LIGNE</div>
+      </div>
+      <div class="cam-body" id="camBody">
+        <div class="cam-corner-bl"></div>
+        <div class="cam-corner-br"></div>
+        <div class="cam-offline" id="camOffline">
+          <svg viewBox="0 0 24 24">
+            <path d="M23 7l-7 5 7 5V7z"/>
+            <rect x="1" y="5" width="15" height="14" rx="2"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+          <span>CAMÉRA DÉSACTIVÉE</span>
+        </div>
+        <img id="camStream" src="" alt="flux" style="display:none;" />
+        <div class="rec-badge" id="recBadge" style="display:none;">
+          <div class="rec-dot"></div> REC
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="panel ctrl-panel">
+      <div class="ctrl-section">
+        <div class="ctrl-title">SYSTÈME</div>
+        <button class="system-toggle" id="sysToggleBtn" onclick="requestToggle()">
+          <svg class="toggle-icon" viewBox="0 0 24 24">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+            <line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+          <span id="sysToggleTxt">ACTIVER LE SYSTÈME</span>
+        </button>
+      </div>
+      <div class="ctrl-section">
+        <div class="ctrl-title">SERVOMOTEUR — CAMÉRA</div>
+        <div class="mode-switch">
+          <button class="mode-btn active" id="btnAuto"   onclick="setMode('auto')">AUTO</button>
+          <button class="mode-btn"        id="btnManual" onclick="setMode('manual')">MANUEL</button>
+        </div>
+        <div class="servo-controls">
+          <button class="servo-btn" id="btnLeft"  onclick="moveServo('left')"  disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <button class="servo-btn" id="btnRight" onclick="moveServo('right')" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="servo-pos">
+          <span class="servo-pos-label">POSITION</span>
+          <span class="servo-pos-val" id="servoVal">90°</span>
+        </div>
+      </div>
+      <div class="ctrl-section">
+        <div class="ctrl-title">SESSION</div>
+        <div class="stat-row">
+          <div class="stat-label">INTRUSIONS DÉTECTÉES</div>
+          <div class="stat-value red" id="statCount">0</div>
+        </div>
+        <div class="stat-divider" style="margin:10px 0;"></div>
+        <div class="stat-row">
+          <div class="stat-label">MODE CAMÉRA</div>
+          <div class="stat-value accent" id="statMode" style="font-size:14px;letter-spacing:0.15em;">AUTO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALARM MODAL -->
+    <div id="alarmModal">
+      <div class="modal-box alarm-box">
+        <div class="alarm-pulse"></div>
+        <div class="modal-title" style="color:var(--red);letter-spacing:0.2em;">
+          ⚠ INTRUSION DÉTECTÉE
+        </div>
+        <div class="modal-sub" style="color:var(--text2);margin-top:-10px;">
+          UNE INTRUSION A ÉTÉ DÉTECTÉE.<br>QUE VOULEZ-VOUS FAIRE ?
+        </div>
+        <button class="pin-btn"
+                style="width:100%;height:52px;background:rgba(255,59,92,0.12);
+                      border-color:var(--red);color:var(--red);font-size:11px;
+                      letter-spacing:0.15em;"
+                onclick="ackAlarm('authorities')">
+          APPELER LES AUTORITÉS
+        </button>
+        <button class="pin-btn"
+                style="width:100%;height:44px;font-size:10px;letter-spacing:0.15em;
+                      color:var(--text2);"
+                onclick="ackAlarm('dismiss')">
+          FAUSSE ALERTE — DÉSACTIVER
+        </button>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="panel log-panel">
+      <div class="log-header">
+        <div class="panel-label">JOURNAL DES INTRUSIONS</div>
+        <div class="log-count">
+          <span class="log-count-badge" id="logBadge">0</span>
+        </div>
+        <button class="log-clear" onclick="clearLog()">EFFACER</button>
+      </div>
+      <div class="log-body" id="logBody">
+        <div class="log-empty" id="logEmpty">AUCUNE INTRUSION ENREGISTRÉE</div>
+      </div>
+    </div>
+
+    <!-- INFOS -->
+    <div class="panel stats-panel">
+      <div class="ctrl-title">INFORMATIONS SYSTÈME</div>
+      <div class="stat-row">
+        <div class="stat-label">HEURE LOCALE</div>
+        <div class="stat-value" id="statTime" style="font-size:18px;">--:--</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-row">
+        <div class="stat-label">ÉTAT ARDUINO</div>
+        <div class="stat-value" style="font-size:12px;letter-spacing:0.15em;">
+          <span style="color:var(--text3)">SÉRIE /dev/ttyACM0</span>
+        </div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-row">
+        <div class="stat-label">CAMÉRA</div>
+        <div class="stat-value" style="font-size:12px;letter-spacing:0.15em;">
+          <span style="color:var(--text3)">RASPBERRY PI CAM V2.1</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PIN MODAL -->
+<div id="pinModal">
+  <div class="modal-box">
+    <div class="modal-title">CONFIRMATION</div>
+    <div class="modal-sub" id="modalSub">ENTREZ VOTRE CODE PIN</div>
+    <div class="pin-display">
+      <div class="pin-dot" id="m0"></div>
+      <div class="pin-dot" id="m1"></div>
+      <div class="pin-dot" id="m2"></div>
+      <div class="pin-dot" id="m3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="modalInput('1')">1</button>
+      <button class="pin-btn" onclick="modalInput('2')">2</button>
+      <button class="pin-btn" onclick="modalInput('3')">3</button>
+      <button class="pin-btn" onclick="modalInput('4')">4</button>
+      <button class="pin-btn" onclick="modalInput('5')">5</button>
+      <button class="pin-btn" onclick="modalInput('6')">6</button>
+      <button class="pin-btn" onclick="modalInput('7')">7</button>
+      <button class="pin-btn" onclick="modalInput('8')">8</button>
+      <button class="pin-btn" onclick="modalInput('9')">9</button>
+      <button class="pin-btn zero" onclick="modalInput('0')">0</button>
+      <button class="pin-btn del" onclick="modalDelete()">&#9003;</button>
+    </div>
+    <div class="lock-error" id="modalError">CODE INCORRECT</div>
+    <button class="modal-cancel" onclick="closeModal()">ANNULER</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="notif-flash" id="notifFlash">
+  <svg viewBox="0 0 24 24">
+    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+  INTRUSION DÉTECTÉE
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
