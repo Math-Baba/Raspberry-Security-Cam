@@ -297,7 +297,12 @@ function startPolling() {
 
 // Afficher le modal d'alarme
 function showAlarmModal() {
-  document.getElementById('alarmModal').classList.add('show');
+  document.getElementById('alarmNotif').classList.add('show');
+}
+
+function openAlarmPanel() {
+  document.getElementById('alarmNotif').classList.remove('show');
+  document.getElementById('alarmPanel').classList.add('show');
 }
 
 // Acquitter l'alarme
@@ -308,11 +313,10 @@ async function ackAlarm(action) {
     body: JSON.stringify({ action })
   });
   alarmPending = false;
-  document.getElementById('alarmModal').classList.remove('show');
+  document.getElementById('alarmPanel').classList.remove('show');
   const msg = action === 'authorities' ? 'AUTORITÉS CONTACTÉES' : 'ALARME LEVÉE';
   showToast(msg, action === 'authorities' ? 'success' : 'error');
 }
-
 // ── TOAST ──
 function showToast(msg, type) {
   const t = document.getElementById('toast');

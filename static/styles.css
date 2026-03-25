@@ -266,8 +266,12 @@ html, body {
   background: #050709;
 }
 .cam-body img {
-  width: 100%; height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
   display: block;
 }
 .cam-offline {
@@ -610,22 +614,103 @@ html, body {
 .notif-flash.show { opacity: 1; transform: translateX(0); }
 .notif-flash svg  { width: 12px; height: 12px; stroke: white; fill: none; stroke-width: 2.5; }
 
-#alarmModal {
-  position: fixed; inset: 0;
-  background: rgba(255, 59, 92, 0.08);
-  backdrop-filter: blur(6px);
+/* Notification toast alarme */
+.alarm-notif {
+  position: fixed;
+  top: 64px; right: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  padding: 12px 16px;
   display: none;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
   z-index: 600;
-  animation: alarmBg 1s ease infinite alternate;
+  transform: translateX(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  min-width: 260px;
+  box-shadow: 0 0 20px rgba(255,59,92,0.2);
 }
-#alarmModal.show { display: flex; }
+.alarm-notif.show {
+  display: flex;
+  opacity: 1;
+  transform: translateX(0);
+  animation: alarmBorderPulse 1.5s ease infinite;
+}
+.alarm-notif svg { width: 18px; height: 18px; stroke: var(--red); flex-shrink: 0; }
+.alarm-notif-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.alarm-notif-text span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--red); }
+.alarm-notif-text small { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 0.1em; }
+.alarm-notif button {
+  background: rgba(255,59,92,0.12);
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.alarm-notif button:hover { background: rgba(255,59,92,0.25); }
 
-@keyframes alarmBg {
-  from { background: rgba(255,59,92,0.05); }
-  to   { background: rgba(255,59,92,0.14); }
+@keyframes alarmBorderPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,59,92,0.2); }
+  50%       { box-shadow: 0 0 30px rgba(255,59,92,0.45); }
 }
+
+/* Panneau de décision */
+.alarm-panel {
+  position: fixed;
+  top: 64px; right: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 600;
+  min-width: 220px;
+  box-shadow: 0 0 20px rgba(255,59,92,0.15);
+}
+.alarm-panel.show { display: flex; }
+
+.alarm-panel-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.alarm-panel-btn {
+  height: 40px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid;
+}
+.alarm-panel-btn.danger {
+  background: rgba(255,59,92,0.12);
+  border-color: var(--red);
+  color: var(--red);
+}
+.alarm-panel-btn.danger:hover { background: rgba(255,59,92,0.25); }
+.alarm-panel-btn.dismiss {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text2);
+}
+.alarm-panel-btn.dismiss:hover { border-color: var(--border2); color: var(--text); }
 
 .alarm-box {
   gap: 20px;

@@ -143,8 +143,8 @@ void updateServoAuto() {
   lastServoMove = millis();
 
   servoPos += servoDir * servoStep;
-  if (servoPos >= 180) { 
-    servoPos = 180; servoDir = -1; 
+  if (servoPos >= 90) { 
+    servoPos = 90; servoDir = -1; 
   }
   else if (servoPos <= 0) { 
     servoPos = 0; servoDir =  1; 
