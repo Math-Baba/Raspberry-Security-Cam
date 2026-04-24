@@ -2,6 +2,8 @@
 
 Surveillance de chambre avec détection d'intrusion laser, caméra en direct, alertes et interface web — Arduino Uno + Raspberry Pi.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ---
 
 ## Composants
